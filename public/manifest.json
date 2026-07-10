@@ -1,0 +1,17 @@
+{
+  "name": "Vitalis — Gamifica tus hábitos",
+  "short_name": "Vitalis",
+  "description": "Trackeador de hábitos gamificado con XP, niveles, rachas, gimnasio y metas mensuales.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0e0a17",
+  "theme_color": "#0e0a17",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

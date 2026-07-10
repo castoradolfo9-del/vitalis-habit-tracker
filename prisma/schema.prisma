@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  timezone     String   @default("America/Mexico_City")
+  plan         String   @default("free")
+  createdAt    DateTime @default(now())
+
+  habits    Habit[]
+  habitLogs HabitLog[]
+  gymLogs   GymLog[]
+  badges    UserBadge[]
+  stats     UserStats?
+}
+
+model Habit {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  icon        String   @default("⭐")
+  category    String   @default("General")
+  difficulty  String   @default("Media") // Facil | Media | Dificil
+  xpValue     Int      @default(10)
+  monthlyGoal Int      @default(0) // 0 = sin meta definida
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  logs HabitLog[]
+
+  @@index([userId, active])
+}
+
+model HabitLog {
+  id          String   @id @default(cuid())
+  habitId     String
+  habit       Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        DateTime @db.Date
+  completed   Boolean  @default(true)
+  completedAt DateTime @default(now())
+
+  @@unique([habitId, date])
+  @@index([userId, date])
+}
+
+model GymLog {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date            DateTime @db.Date
+  trained         Boolean  @default(false)
+  rating          Int      @default(0) // 1-5
+  cardio          Boolean  @default(false)
+  cardioMinutes   Int      @default(0)
+  cardioIntensity String   @default("Media") // Baja | Media | Alta
+  calories        Int      @default(0)
+  steps           Int      @default(0)
+  xpEarned        Int      @default(0)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+}
+
+model UserStats {
+  id              String @id @default(cuid())
+  userId          String @unique
+  user            User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  xpTotal         Int    @default(0)
+  habitStreak     Int    @default(0)
+  habitStreakMax  Int    @default(0)
+  gymStreak       Int    @default(0)
+  gymStreakMax    Int    @default(0)
+  tasksCompleted  Int    @default(0)
+}
+
+model UserBadge {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeCode  String
+  unlockedAt DateTime @default(now())
+
+  @@unique([userId, badgeCode])
+}
