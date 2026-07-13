@@ -95,3 +95,14 @@ model UserBadge {
 
   @@unique([userId, badgeCode])
 }
+
+// registro de intentos de login/registro para rate limiting (sin estado en memoria,
+// funciona bien en serverless porque cada invocación consulta la misma tabla)
+model RateLimitAttempt {
+  id         String   @id @default(cuid())
+  identifier String // email (login) o IP (registro)
+  action     String // "login" | "register"
+  createdAt  DateTime @default(now())
+
+  @@index([identifier, action, createdAt])
+}

@@ -58,8 +58,12 @@ export default function Home() {
           ))}
         </div>
 
-        <footer className="mt-24 text-center text-xs text-text-dim">
-          Instalable en tu iPhone o Android como app — sin App Store.
+        <footer className="mt-24 text-center text-xs text-text-dim space-y-2">
+          <p>Instalable en tu iPhone o Android como app — sin App Store.</p>
+          <p className="flex justify-center gap-4">
+            <Link href="/privacy" className="hover:text-text">Privacidad</Link>
+            <Link href="/terms" className="hover:text-text">Términos</Link>
+          </p>
         </footer>
       </div>
     </div>

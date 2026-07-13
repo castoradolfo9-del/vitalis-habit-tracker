@@ -1,8 +1,19 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, recordAttempt, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
+  const ip = getClientIp(req);
+  const allowed = await checkRateLimit(ip, "register");
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Demasiadas cuentas creadas desde aquí. Espera un rato e inténtalo de nuevo." },
+      { status: 429 }
+    );
+  }
+  await recordAttempt(ip, "register");
+
   const { email, password, name } = await req.json();
 
   if (!email || !password || password.length < 8) {

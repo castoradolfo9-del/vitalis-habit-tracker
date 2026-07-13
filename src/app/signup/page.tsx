@@ -93,6 +93,12 @@ export default function SignupPage() {
               {loading ? "Creando..." : "Crear cuenta"}
             </button>
           </form>
+
+          <p className="text-[11px] text-text-dim text-center mt-4">
+            Al crear una cuenta aceptas nuestros{" "}
+            <Link href="/terms" className="underline">Términos</Link> y nuestra{" "}
+            <Link href="/privacy" className="underline">Política de Privacidad</Link>.
+          </p>
         </div>
         <p className="text-center text-sm text-text-dim mt-4">
           ¿Ya tienes cuenta?{" "}
