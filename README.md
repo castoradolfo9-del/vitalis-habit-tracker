@@ -10,9 +10,9 @@ Necesitas Node.js 20+ y una base de datos Postgres. La forma más rápida de ten
 ```bash
 npm install
 cp .env.example .env
-# edita .env con tu DATABASE_URL y un AUTH_SECRET (genera uno con: openssl rand -base64 32)
-npx prisma db push   # crea las tablas en tu base de datos
-npm run dev
+# edita .env con tu DATABASE_URL (pooled), DIRECT_URL (directa) y un AUTH_SECRET
+npx prisma db push   # crea las tablas en tu base de datos (usa DIRECT_URL)
+npm run dev          # la app usa DATABASE_URL (pooled)
 ```
 
 Abre [http://localhost:3000](http://localhost:3000).
@@ -22,8 +22,10 @@ Abre [http://localhost:3000](http://localhost:3000).
 ### 2.1 Base de datos — Neon
 
 1. Crea una cuenta en [neon.tech](https://neon.tech) (gratis, no pide tarjeta).
-2. Crea un proyecto nuevo → copia el **Connection string** (empieza con `postgresql://...`).
-3. Guárdalo, lo vas a necesitar en el paso 2.3.
+2. Crea un proyecto nuevo → en **Connection Details** copia dos versiones del connection string:
+   - Con **"Pooled connection"** activado → este es tu `DATABASE_URL` (agrégale `&pgbouncer=true` al final). La app lo usa en cada request; sin pool, cada función serverless de Vercel abriría su propia conexión y agotarías el límite de Postgres rápido.
+   - Con **"Pooled connection"** desactivado → este es tu `DIRECT_URL`. Solo se usa para correr migraciones (`prisma db push`/`migrate`), que no funcionan bien a través del pooler.
+3. Guarda ambos, los vas a necesitar en el paso 2.3.
 
 ### 2.2 Subir el código a GitHub
 
@@ -38,7 +40,8 @@ Crea un repositorio en GitHub y sigue las instrucciones para subir (`git remote 
 1. Crea una cuenta en [vercel.com](https://vercel.com) (puedes entrar con tu cuenta de GitHub).
 2. **Add New → Project** → importa tu repositorio.
 3. En **Environment Variables** agrega:
-   - `DATABASE_URL` → el connection string de Neon del paso 2.1
+   - `DATABASE_URL` → el connection string **pooled** de Neon del paso 2.1
+   - `DIRECT_URL` → el connection string **directo** de Neon del paso 2.1
    - `AUTH_SECRET` → genera uno nuevo con `openssl rand -base64 32`
 4. Click **Deploy**.
 5. Una vez desplegado, corre las migraciones contra la base de datos de producción (una sola vez, desde tu máquina, apuntando temporalmente tu `.env` local al `DATABASE_URL` de Neon):
