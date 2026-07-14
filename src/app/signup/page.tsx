@@ -18,10 +18,12 @@ export default function SignupPage() {
     setError("");
     setLoading(true);
 
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email, password, timezone }),
     });
 
     if (!res.ok) {

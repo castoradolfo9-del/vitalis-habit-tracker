@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { todayUTC } from "@/lib/dates";
+import { todayForTimezone } from "@/lib/dates";
 import { recalcStreaksAndBadges } from "@/lib/stats";
+import { getUserTimezone } from "@/lib/user";
 
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -13,7 +14,8 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   const habit = await prisma.habit.findUnique({ where: { id } });
   if (!habit || habit.userId !== userId) return NextResponse.json({ error: "not found" }, { status: 404 });
 
-  const today = todayUTC();
+  const timezone = await getUserTimezone(userId);
+  const today = todayForTimezone(timezone);
   const existing = await prisma.habitLog.findUnique({ where: { habitId_date: { habitId: id, date: today } } });
 
   let nowCompleted: boolean;
@@ -34,6 +36,6 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     create: { userId, xpTotal: Math.max(0, xpDelta), tasksCompleted: Math.max(0, tasksDelta) },
   });
 
-  const newlyUnlocked = await recalcStreaksAndBadges(userId);
+  const newlyUnlocked = await recalcStreaksAndBadges(userId, timezone);
   return NextResponse.json({ ok: true, newlyUnlockedBadges: newlyUnlocked });
 }

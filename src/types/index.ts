@@ -56,6 +56,23 @@ export interface WeeklyStepDay {
   pasos: number;
 }
 
+export interface CalendarDay {
+  fecha: string;
+  dia: number;
+  completadas: number;
+  totalHabitos: number;
+  pct: number;
+  entreno: boolean;
+  esHoy: boolean;
+  esFuturo: boolean;
+}
+
+export interface CalendarResponse {
+  year: number;
+  month: number; // 1-12
+  days: CalendarDay[];
+}
+
 export interface DashboardData {
   habits: HabitDTO[];
   stats: StatsDTO;

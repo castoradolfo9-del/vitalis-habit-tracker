@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { todayUTC } from "@/lib/dates";
+import { todayForTimezone } from "@/lib/dates";
 import { calcGymXP } from "@/lib/gamification";
 import { recalcStreaksAndBadges } from "@/lib/stats";
+import { getUserTimezone } from "@/lib/user";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -11,7 +12,8 @@ export async function POST(req: Request) {
   const userId = session.user.id;
 
   const { entreno, calificacion, cardio, cardioMinutos, cardioIntensidad } = await req.json();
-  const today = todayUTC();
+  const timezone = await getUserTimezone(userId);
+  const today = todayForTimezone(timezone);
 
   const existing = await prisma.gymLog.findUnique({ where: { userId_date: { userId, date: today } } });
   const newXP = calcGymXP(!!entreno, Number(calificacion) || 0, !!cardio, Number(cardioMinutos) || 0, cardioIntensidad || "Media");
@@ -45,6 +47,6 @@ export async function POST(req: Request) {
     create: { userId, xpTotal: Math.max(0, newXP) },
   });
 
-  const newlyUnlocked = await recalcStreaksAndBadges(userId);
+  const newlyUnlocked = await recalcStreaksAndBadges(userId, timezone);
   return NextResponse.json({ ok: true, newlyUnlockedBadges: newlyUnlocked });
 }

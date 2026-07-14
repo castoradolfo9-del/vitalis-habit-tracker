@@ -3,6 +3,16 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, recordAttempt, getClientIp } from "@/lib/rate-limit";
 
+function isValidTimezone(tz: unknown): tz is string {
+  if (typeof tz !== "string" || !tz) return false;
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(req: Request) {
   const ip = getClientIp(req);
   const allowed = await checkRateLimit(ip, "register");
@@ -14,7 +24,7 @@ export async function POST(req: Request) {
   }
   await recordAttempt(ip, "register");
 
-  const { email, password, name } = await req.json();
+  const { email, password, name, timezone } = await req.json();
 
   if (!email || !password || password.length < 8) {
     return NextResponse.json(
@@ -36,6 +46,7 @@ export async function POST(req: Request) {
       email: normalizedEmail,
       passwordHash,
       name: name || null,
+      timezone: isValidTimezone(timezone) ? timezone : undefined,
       stats: { create: {} },
     },
   });

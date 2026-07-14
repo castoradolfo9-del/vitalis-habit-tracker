@@ -1,22 +1,24 @@
 import { prisma } from "@/lib/prisma";
-import { todayUTC, dateKey } from "@/lib/dates";
+import { todayForTimezone, dateKey } from "@/lib/dates";
 import { levelFromXP } from "@/lib/gamification";
 import { getMonthlyCounts, getWeeklyCalories, getWeeklySteps, badgesForDisplay } from "@/lib/stats";
 import { getDailyQuote } from "@/lib/quotes";
+import { getUserTimezone } from "@/lib/user";
 import type { DashboardData } from "@/types";
 
 export async function buildDashboardData(userId: string): Promise<DashboardData> {
-  const today = todayUTC();
+  const timezone = await getUserTimezone(userId);
+  const today = todayForTimezone(timezone);
 
   const [habits, todayLogs, monthlyCounts, stats, unlockedBadges, gymToday, weeklyCalories, weeklySteps] = await Promise.all([
     prisma.habit.findMany({ where: { userId, active: true }, orderBy: { createdAt: "asc" } }),
     prisma.habitLog.findMany({ where: { userId, date: today, completed: true }, select: { habitId: true } }),
-    getMonthlyCounts(userId),
+    getMonthlyCounts(userId, timezone),
     prisma.userStats.upsert({ where: { userId }, update: {}, create: { userId } }),
     prisma.userBadge.findMany({ where: { userId }, select: { badgeCode: true } }),
     prisma.gymLog.findUnique({ where: { userId_date: { userId, date: today } } }),
-    getWeeklyCalories(userId),
-    getWeeklySteps(userId),
+    getWeeklyCalories(userId, timezone),
+    getWeeklySteps(userId, timezone),
   ]);
 
   const completedTodayIds = new Set(todayLogs.map((l) => l.habitId));

@@ -11,6 +11,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <header className="flex items-center justify-between px-4 py-3 border-b border-border">
         <Link href="/app" className="font-bold text-sm">🎮 Vitalis</Link>
         <div className="flex items-center gap-3">
+          <Link href="/app/calendar" className="text-xs text-text-dim hover:text-text">
+            Calendario
+          </Link>
           <Link href="/app/account" className="text-xs text-text-dim hover:text-text">
             Cuenta
           </Link>

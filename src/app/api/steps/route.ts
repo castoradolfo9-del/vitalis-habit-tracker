@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { todayUTC } from "@/lib/dates";
+import { todayForTimezone } from "@/lib/dates";
+import { getUserTimezone } from "@/lib/user";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -10,7 +11,7 @@ export async function POST(req: Request) {
 
   const { pasos } = await req.json();
   const value = Math.max(0, Number(pasos) || 0);
-  const today = todayUTC();
+  const today = todayForTimezone(await getUserTimezone(userId));
 
   await prisma.gymLog.upsert({
     where: { userId_date: { userId, date: today } },
